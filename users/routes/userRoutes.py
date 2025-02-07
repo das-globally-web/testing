@@ -81,7 +81,7 @@ async def read_users_me(current_user: UserTable = Depends(get_current_user)):
     }
 
 @router.get("/user-find/user/{id}")
-async def findUser(id: str , UserTable = Depends(get_current_user)):
+async def findUser(id: str , user: UserTable = Depends(get_current_user)):
     finadata = UserTable.objects.get(id=ObjectId(id))
     return {
         "message": "User find success",
@@ -173,7 +173,7 @@ def find_matching_users(current_user: UserTable) -> List[Dict]:
 
 # FastAPI Endpoint to Get Matches
 @router.post("/user/match-users/", )
-async def match_users(current_user: UserCreate):
+async def match_users(current_user: UserCreate,user: UserTable = Depends(get_current_user)):
     # Convert the Pydantic model to a MongoEngine document
     current_user_doc = UserTable.objects(uuid=current_user.uuid).first()
     if not current_user_doc:
@@ -187,9 +187,9 @@ async def match_users(current_user: UserCreate):
 
 # FastAPI Endpoint to Accept or Deny a User
 @router.post("/user/make-decision/")
-async def make_decision(decision: UserDecision):
+async def make_decision(decision: UserDecision,user: UserTable = Depends(get_current_user)):
     # Find the current user and target user
-    
+
     current_user = UserTable.objects(uuid=decision.user_id).first()
     target_user = UserTable.objects(uuid=decision.target_user_id).first()
 
