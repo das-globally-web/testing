@@ -222,7 +222,7 @@ def generate_qr(user: UserTable = Depends(get_current_user)):
     qr.make(fit=True)
 
     # Create an image from the QR Code instance
-    img = qr.make_image(fill_color="black", back_color="white")
+    img = qr.make_image(fill_color="red", back_color="white")
 
     # Save the image to a bytes buffer
     buffer = BytesIO()

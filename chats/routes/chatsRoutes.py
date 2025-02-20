@@ -24,7 +24,7 @@ async def get_inbox(current_user: UserTable = Depends(get_current_user)):
 
         # Fix: Ensure the correct last message display
         if convo.last_message.sender_id == str(ObjectId(current_user.id)):
-            last_message_text = "Message seen" if convo.last_message.is_read else "Message sent"
+            last_message_text = "seen just now" if convo.last_message.is_read else "Sent just now"
         else:
             last_message_text = convo.last_message.message
 
