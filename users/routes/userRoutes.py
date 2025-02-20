@@ -9,6 +9,9 @@ from datetime import datetime, timedelta
 from fastapi import APIRouter
 from users.models.usermodel import UserCreate, UserDecision, UserInteraction, UserTable
 from users.routes.userAuth import authenticate_user, create_access_token, get_current_user, get_user
+import qrcode
+from fastapi.responses import StreamingResponse
+from io import BytesIO
 
 SECRET_KEY = "9b7f4a8c2dfe5a1234567890abcdef1234567890abcdef1234567890abcddf"
 ALGORITHM = "HS256"
@@ -172,10 +175,10 @@ def find_matching_users(current_user: UserTable) -> List[Dict]:
     return matching_users
 
 # FastAPI Endpoint to Get Matches
-@router.post("/user/match-users/", )
-async def match_users(current_user: UserCreate,user: UserTable = Depends(get_current_user)):
+@router.get("/user/match-users/", )
+async def match_users(user: UserTable = Depends(get_current_user)):
     # Convert the Pydantic model to a MongoEngine document
-    current_user_doc = UserTable.objects(uuid=current_user.uuid).first()
+    current_user_doc = UserTable.objects(uuid=user.uuid).first()
     if not current_user_doc:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -204,3 +207,44 @@ async def make_decision(decision: UserDecision,user: UserTable = Depends(get_cur
     ).save()
 
     return {"message": f"Decision '{decision.decision}' saved for user {target_user.fullName}"}
+
+@router.get("/user/generate-qr/")
+def generate_qr(user: UserTable = Depends(get_current_user)):
+    # Generate the QR code
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    print(ObjectId(user.id))
+    qr.add_data(ObjectId(user.id))
+    qr.make(fit=True)
+
+    # Create an image from the QR Code instance
+    img = qr.make_image(fill_color="black", back_color="white")
+
+    # Save the image to a bytes buffer
+    buffer = BytesIO()
+    img.save(buffer, format="PNG")
+    buffer.seek(0)
+
+    # Return the image as a response
+    return StreamingResponse(buffer, media_type="image/png")
+
+
+@router.get("/user/find-by-qr-code/{id}")
+def findByQrCode(id:str,user: UserTable = Depends(get_current_user) ):
+    finduserData = UserTable.objects.get(id=ObjectId(id))
+    if finduserData:
+        return {
+            "message": "user found",
+            "data": json.loads(finduserData.to_json()),
+            "status": 200
+        }
+    else :
+      return {
+            "message": "user not found",
+            "data": None,
+            "status": 200
+    }
