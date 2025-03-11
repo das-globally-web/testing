@@ -74,3 +74,5 @@ async def mark_messages_as_seen(conversation_id: str, current_user: UserTable = 
         conversation.last_message.save()
 
     return {"message": "Messages marked as seen", "status": 200}
+
+

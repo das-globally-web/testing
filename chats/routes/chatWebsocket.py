@@ -43,6 +43,7 @@ manager = ConnectionManager()
 async def websocket_endpoint(websocket: WebSocket, user_id: str):
     """Handles WebSocket connections for private messaging."""
     await manager.connect(websocket, user_id)
+    
 
     try:
         while True:

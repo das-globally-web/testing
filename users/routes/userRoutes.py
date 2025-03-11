@@ -60,6 +60,7 @@ async def create_user(user: UserCreate):
         location_city=user.location_city,
         location_state=user.location_state,
     )
+    
     new_user.save()
     return {"message": "User created successfully"}
 
